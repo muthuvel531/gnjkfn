@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #0f0f15;
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 360px;
+        }
+
+        .containe {
+            padding: 20px;
+            border-radius: 18px;
+            background: #14141d;
+            box-shadow: 0 0 12px rgba(194, 165, 255, 0.25);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+            border-bottom: 2px solid #27272f;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            padding: 6px 14px;
+            font-size: 18px;
+            color: #8f8f9d;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 15px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .booking-card {
+            background: #1c1c25;
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+            width: 300px;
+            box-shadow: 0 0 5px rgba(90, 90, 100, 0.3);
+        }
+
+        .service-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .details h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .details p {
+            margin: 3px 0;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .btn-msg,
+        .btn-cancel {
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 80px;
+            text-align: center;
+        }
+
+        .btn-msg {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .status {
+            background: #a259ff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .empty {
+            text-align: center;
+            margin-top: 25px;
+            color: #aaa;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="root"></div>
+    <script type="text/babel">
+
+        function MyBookings() {
+
+            const [activeTab, setActiveTab] = React.useState("upcoming");
+            const [bookings, setBookings] = React.useState([]);
+
+            // Load stored bookings
+            React.useEffect(() => {
+                const data = JSON.parse(localStorage.getItem("bookings")) || [];
+                setBookings(data);
+            }, []);
+
+            function markCancelled(index) {
+                let updated = [...bookings];
+                updated[index].status = "Cancelled";
+                localStorage.setItem("bookings", JSON.stringify(updated));
+                setBookings(updated);
+            }
+
+            function sendWhatsApp(index) {
+                let b = bookings[index];
+                let message = `Hi, I want to talk about my booking:
+    Service: ${b.service}
+    Name: ${b.name}
+    Price: ${b.price}`;
+
+                window.open("https://wa.me/916381893332?text=" + encodeURIComponent(message));
+            }
+
+            return (
+                <div className="container">
+                    <div className="containe">
+
+                        <div className="header">
+                            <h1>My Bookings</h1>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="tabs">
+                            <button
+                                className={`tab ${activeTab === "upcoming" ? "active" : ""}`}
+                                onClick={() => setActiveTab("upcoming")}
+                            >
+                                Bookings
+                            </button>
+
+                            
+                        </div>
+
+                        {/* UPCOMING BOOKINGS */}
+                        <div className={`tab-content ${activeTab === "upcoming" ? "active" : ""}`}>
+                            {
+                                bookings.filter(b => b.status === "Upcoming").length === 0 ? (
+                                    <p className="empty">No bookings yet.</p>
+                                ) : (
+                                    bookings.map((b, index) =>
+                                        b.status === "Upcoming" && (
+                                            <div key={index} className="booking-card">
+                                                <img src={b.image} className="service-img" />
+                                                <div className="details">
+                                                    <h3>{b.service}</h3>
+                                                    <p>{b.name}</p>
+                                                    <p>{b.price}</p>
+                                                </div>
+
+                                                <div className="actions">
+                                                    <button className="btn-msg" onClick={() => sendWhatsApp(index)}>Message</button>
+                                                    <button className="btn-cancel" onClick={() => markCancelled(index)}>Cancel</button>
+                                                </div>
+                                            </div>
+                                        )
+                                    )
+                                )
+                            }
+                        </div>
+
+                        {/* CANCELLED BOOKINGS */}
+                        <div className={`tab-content ${activeTab === "cancelled" ? "active" : ""}`}>
+                            {
+                                bookings.filter(b => b.status === "Cancelled").length === 0 ? (
+                                    <p className="empty">No cancelled bookings.</p>
+                                ) : (
+                                    bookings.map((b, index) =>
+                                        b.status === "Cancelled" && (
+                                            <div key={index} className="booking-card">
+                                                <img src={b.image} className="service-img" />
+                                                <div className="details">
+                                                    <h3>{b.service}</h3>
+                                                    <p>{b.name}</p>
+                                                    <p>{b.price}</p>
+                                                </div>
+                                                <span className="status">Cancelled</span>
+                                            </div>
+                                        )
+                                    )
+                                )
+                            }
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<MyBookings />);
+
+    </script>
+
+
+
+
+</body>
+
+</html>

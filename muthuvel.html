@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Calendar</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        function CalendarPage() {
+
+            const [month, setMonth] = React.useState(new Date().getMonth());
+            const [year, setYear] = React.useState(new Date().getFullYear());
+            const [bookings, setBookings] = React.useState([]);
+
+            React.useEffect(() => {
+                const data = JSON.parse(localStorage.getItem("bookings")) || [];
+                setBookings(data);
+            }, []);
+
+            function daysInMonth(m, y) {
+                return new Date(y, m + 1, 0).getDate();
+            }
+
+            function firstDayOfMonth(m, y) {
+                const day = new Date(y, m, 1).getDay();
+                return day === 0 ? 6 : day - 1; // Monday-first
+            }
+
+            function sendWhatsApp(i) {
+                let b = bookings[i];
+                let msg = `Hi! I want to talk about my booking:
+Service: ${b.service}
+Name: ${b.name}
+Price: ${b.price}`;
+
+                window.open("https://wa.me/916381893332?text=" + encodeURIComponent(msg));
+            }
+
+            const upcoming = bookings.filter(b => b.status === "Upcoming");
+
+            return (
+                 <div>
+                    className="mobile-frame"
+                <div className="container">
+
+                    <h2 className="header-title">
+                        <span className="icon">📅</span> My Calendar
+                    </h2>
+
+                    {/* Calendar Box */}
+                    <div className="calendar-box">
+                        <div className="month-row">
+                            <h3>{new Date(year, month).toLocaleString("default", { month: "long" })} {year}</h3>
+
+                            <div className="nav-btn">
+                                <span onClick={() => {
+                                    let m = month - 1;
+                                    if (m < 0) { m = 11; setYear(year - 1); }
+                                    setMonth(m);
+                                }}>◀</span>
+
+                                <span onClick={() => {
+                                    let m = month + 1;
+                                    if (m > 11) { m = 0; setYear(year + 1); }
+                                    setMonth(m);
+                                }}>▶</span>
+                            </div>
+                        </div>
+
+                        <div className="weekdays">
+                            <span>Mo</span><span>Tu</span><span>We</span>
+                            <span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+                        </div>
+
+                        <div className="days">
+                            {/* Empty boxes for offset */}
+                            {Array(firstDayOfMonth(month, year)).fill("").map((_, i) => (
+                                <div key={"empty" + i}></div>
+                            ))}
+
+                            {/* Days */}
+                            {Array(daysInMonth(month, year)).fill("").map((_, i) => (
+                                <div key={i + 1}>{i + 1}</div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Booking List */}
+                    <div className="section-title">
+                        Service Booking (<span>{upcoming.length}</span>)
+                        <span className="see-all" onClick={() => location.href = "bookings.html"}>See All</span>
+                    </div>
+
+                    <div id="booking-list">
+                        {upcoming.length === 0 ? (
+                            <p style={{ opacity: 0.6 }}>No upcoming bookings</p>
+                        ) : (
+                            upcoming.map((b, i) => (
+                                <div className="booking-card" key={i}>
+                                    <img src={b.image} />
+
+                                    <div className="details">
+                                        <h4>{b.service}</h4>
+                                        <p>{b.name}</p>
+                                    </div>
+
+                                    <div
+                                        className="chat-icon"
+                                        onClick={() => sendWhatsApp(i)}
+                                    >
+                                        Message
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<CalendarPage />);
+
+    </script>
+
+</body>
+
+</html>
+
+<style>
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #0d0d12;
+    color: #ffffff;
+}
+  * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .mobile-frame {
+            width:90%;
+            width: 380px;
+            height: 690px;
+            background: linear-gradient(145deg, #7a1fa6, #9b4dff);
+            border-radius: 45px;
+            padding: 20px;
+            box-shadow: 0 0 50px rgba(201, 165, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+                        position: relative;
+
+            animation: fadeUp 1.2s ease forwards;
+            opacity: 0;
+                        overflow: hidden;
+            transform: translateY(50px);
+        }
+
+
+.container {
+    padding: 22px;
+    padding-bottom: 140px;
+}
+
+/* Header */
+.header-title {
+    font-size: 26px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.header-title .icon {
+    font-size: 32px;
+}
+
+/* Calendar Box */
+.calendar-box {
+    background: #18181f;
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 0 18px rgba(162, 89, 255, 0.15);
+}
+
+/* Month Row */
+.month-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.month-row h3 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.nav-btn span {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.nav-btn span:hover {
+    background: #2e2e39;
+}
+
+/* Weekdays */
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    opacity: 0.6;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Calendar Days */
+.days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 15px;
+}
+
+.days div {
+    width: 42px;
+    height: 42px;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #15151c;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.days div:hover {
+    background: #6a34ff;
+}
+
+.days div.selected {
+    background: #a259ff;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(162, 89, 255, 0.5);
+}
+
+/* Section Title */
+.section-title {
+    margin: 24px 0 12px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.see-all {
+    float: right;
+    font-size: 14px;
+    color: #a259ff;
+    cursor: pointer;
+}
+
+/* Booking Card */
+.booking-card {
+    background: #1c1c23;
+    padding: 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(162, 89, 255, 0.1);
+}
+
+.booking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(162, 89, 255, 0.2);
+}
+
+.booking-card img {
+    width: 65px;
+    height: 65px;
+    border-radius: 15px;
+    object-fit: cover;
+}
+
+.details {
+    flex: 1;
+    margin-left: 14px;
+}
+
+.details h4 {
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.details p {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* WhatsApp Button */
+.chat-icon {
+    background: #25D366;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.25s;
+}
+
+.chat-icon:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+</style>
